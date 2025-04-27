@@ -1,2 +1,63 @@
-/* Импортируем общие стили */
-@import '../../../styles.css';
+/* Специфичные стили для компонента договоров */
+
+/* Стилизация выпадающих списков в формах договоров */
+.form-group select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%233949ab' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding-right: 30px;
+}
+
+/* Стилизация сумм договоров */
+.data-table tr td:nth-child(5) {
+    font-weight: 700;
+    color: var(--success-color);
+}
+
+/* Стилизация формы фильтра */
+.form-container h3 {
+    margin-bottom: var(--spacing-sm);
+}
+
+.filter-button {
+    background-color: var(--primary-dark);
+    margin-bottom: var(--spacing-sm);
+    white-space: nowrap;
+    height: 40px;
+    align-self: flex-end;
+}
+
+.filter-button:hover {
+    background-color: var(--primary-color);
+}
+
+/* Стилизация блоков статистики */
+.form-container p {
+    margin-bottom: var(--spacing-sm);
+    line-height: 1.4;
+}
+
+.form-container p strong {
+    color: var(--primary-dark);
+}
+
+/* Стилизация кнопок удаления */
+.data-table button {
+    padding: 5px 10px;
+    font-size: 12px;
+    background-color: var(--accent-color);
+}
+
+.data-table button:hover {
+    background-color: #d32f2f; /* Темнее красный при наведении */
+}
+
+/* Стилизация строки с отсутствием договоров */
+.data-table tr td[colspan] {
+    padding: var(--spacing-lg);
+    color: var(--medium-gray);
+    font-style: italic;
+}

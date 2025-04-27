@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule, NgModel } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Department, Manager, Work, WorkOnTopic } from '../../models/models';
+import { DataService } from '../../services/data.service';
 
 @Component({
   selector: 'app-departments',
@@ -54,64 +55,106 @@ export class DepartmentsComponent implements OnInit {
   selectedWorkCode: string = '';
   
   // Темы для выбора
-  topics: { topicCode: string, topicName: string }[] = [
-    { topicCode: '1t', topicName: 'экология' },
-    { topicCode: '2t', topicName: 'зоология' },
-    { topicCode: '3t', topicName: 'информатика' },
-    { topicCode: '4t', topicName: 'математика' },
-    { topicCode: '5t', topicName: 'философия' },
-  ];
+  topics: { topicCode: string, topicName: string }[] = [];
   
-  constructor() { }
+  /**
+   * Конструктор с инжекцией сервиса данных
+   */
+  constructor(private dataService: DataService) { }
   
+  /**
+   * Инициализация компонента - загрузка данных из сервиса
+   */
   ngOnInit(): void {
-    this.initializeData();
+    // Получаем начальные данные
+    this.managers = this.dataService.getManagers();
+    this.departments = this.dataService.getDepartments();
+    this.works = this.dataService.getWorks();
+    this.workOnTopics = this.dataService.getWorkOnTopics();
+    this.topics = this.dataService.getTopics();
+    
+    // Обновляем номер нового подразделения
+    this.newDepartment.departmentNumber = this.dataService.getNextDepartmentNumber();
+    
+    // Подписываемся на изменения данных из сервиса
+    this.dataService.managers$.subscribe(managers => {
+      this.managers = managers;
+    });
+    
+    this.dataService.departments$.subscribe(departments => {
+      this.departments = departments;
+      // Обновляем номер нового подразделения
+      this.newDepartment.departmentNumber = this.dataService.getNextDepartmentNumber();
+    });
+    
+    this.dataService.works$.subscribe(works => {
+      this.works = works;
+    });
+    
+    this.dataService.workOnTopics$.subscribe(workOnTopics => {
+      this.workOnTopics = workOnTopics;
+    });
+    
+    this.dataService.topics$.subscribe(topics => {
+      this.topics = topics;
+    });
+    
+    // Инициализация формы нового подразделения
+    this.resetWorkOnTopicForm();
   }
   
-  // Добавление нового подразделения
+  /**
+   * Добавление нового подразделения
+   * @param namein Элемент NgModel для названия подразделения
+   * @param managerin Элемент NgModel для руководителя подразделения
+   */
   addDepartment(namein: NgModel, managerin: NgModel): void {
     if (this.departments.some(dept => dept.departmentNumber === this.newDepartment.departmentNumber)) {
       alert('Подразделение с таким номером уже существует!');
       return;
     }
     
-    this.departments.push({...this.newDepartment});
+    // Добавляем подразделение через сервис
+    this.dataService.addDepartment({...this.newDepartment});
+    
     namein.control.markAsUntouched();
     managerin.control.markAsUntouched();
     this.resetDepartmentForm();
   }
   
-  // Сброс формы подразделения
+  /**
+   * Сброс формы подразделения
+   */
   resetDepartmentForm(): void {
     this.newDepartment = {
-      departmentNumber: this.getNextDepartmentNumber(),
+      departmentNumber: this.dataService.getNextDepartmentNumber(),
       departmentName: '',
       managerFullName: ''
     };
   }
   
-  // Получение следующего номера подразделения
-  getNextDepartmentNumber(): number {
-    if (this.departments.length === 0) {
-      return 1;
-    }
-    return Math.max(...this.departments.map(dept => dept.departmentNumber)) + 1;
-  }
-  
-  // Добавление новой работы
+  /**
+   * Добавление новой работы
+   * @param codein Элемент NgModel для кода работы
+   * @param namein Элемент NgModel для названия работы
+   */
   addWork(codein: NgModel, namein: NgModel): void {
     if (this.works.some(work => work.workCode === this.newWork.workCode)) {
       alert('Работа с таким кодом уже существует!');
       return;
     }
     
-    this.works.push({...this.newWork});
+    // Добавляем работу через сервис
+    this.dataService.addWork({...this.newWork});
+    
     codein.control.markAsUntouched();
     namein.control.markAsUntouched();
     this.resetWorkForm();
   }
   
-  // Сброс формы работы
+  /**
+   * Сброс формы работы
+   */
   resetWorkForm(): void {
     this.newWork = {
       workCode: '',
@@ -119,7 +162,14 @@ export class DepartmentsComponent implements OnInit {
     };
   }
   
-  // Добавление работы по теме выполняемой подразделением
+  /**
+   * Добавление работы по теме выполняемой подразделением
+   * @param topicin Элемент NgModel для темы
+   * @param workin Элемент NgModel для работы
+   * @param deptin Элемент NgModel для подразделения
+   * @param startin Элемент NgModel для даты начала
+   * @param endin Элемент NgModel для даты окончания
+   */
   addWorkOnTopic(topicin: NgModel, workin: NgModel, deptin: NgModel, startin: NgModel, endin: NgModel): void {
     const newRecord = {
       ...this.newWorkOnTopic,
@@ -135,7 +185,9 @@ export class DepartmentsComponent implements OnInit {
       return;
     }
     
-    this.workOnTopics.push(newRecord);
+    // Добавляем запись через сервис
+    this.dataService.addWorkOnTopic(newRecord);
+    
     topicin.control.markAsUntouched();
     workin.control.markAsUntouched();
     deptin.control.markAsUntouched();
@@ -144,7 +196,9 @@ export class DepartmentsComponent implements OnInit {
     this.resetWorkOnTopicForm();
   }
   
-  // Сброс формы работы по теме
+  /**
+   * Сброс формы работы по теме
+   */
   resetWorkOnTopicForm(): void {
     const today = new Date();
     const nextYear = new Date();
@@ -159,112 +213,149 @@ export class DepartmentsComponent implements OnInit {
     };
   }
   
-  // Загрузка подразделения для редактирования
+  /**
+   * Загрузка подразделения для редактирования
+   */
   loadDepartmentForEditing(): void {
+    if (!this.selectedDepartmentNumber) {
+      alert('Пожалуйста, выберите подразделение для редактирования');
+      return;
+    }
+    
     const deptToEdit = this.departments.find(dept => dept.departmentNumber === this.selectedDepartmentNumber);
     if (deptToEdit) {
       this.selectedDepartment = {...deptToEdit};
+    } else {
+      alert('Подразделение не найдено');
     }
   }
   
-  // Обновление подразделения
+  /**
+   * Обновление подразделения
+   */
   updateDepartment(): void {
     if (this.selectedDepartment) {
-      const index = this.departments.findIndex(dept => dept.departmentNumber === this.selectedDepartment!.departmentNumber);
-      if (index !== -1) {
-        this.departments[index] = {...this.selectedDepartment};
+      // Проверяем валидность данных
+      if (!this.selectedDepartment.departmentName || !this.selectedDepartment.managerFullName) {
+        alert('Пожалуйста, заполните все поля');
+        return;
       }
+      
+      // Обновляем подразделение через сервис
+      this.dataService.updateDepartment({...this.selectedDepartment});
       this.selectedDepartment = null;
     }
   }
   
-  // Загрузка работы для редактирования
+  /**
+   * Загрузка работы для редактирования
+   */
   loadWorkForEditing(): void {
+    if (!this.selectedWorkCode) {
+      alert('Пожалуйста, выберите работу для редактирования');
+      return;
+    }
+    
     const workToEdit = this.works.find(work => work.workCode === this.selectedWorkCode);
     if (workToEdit) {
       this.selectedWork = {...workToEdit};
+    } else {
+      alert('Работа не найдена');
     }
   }
   
-  // Обновление работы
+  /**
+   * Обновление работы
+   */
   updateWork(): void {
     if (this.selectedWork) {
-      const index = this.works.findIndex(work => work.workCode === this.selectedWork!.workCode);
-      if (index !== -1) {
-        this.works[index] = {...this.selectedWork};
+      // Проверяем валидность данных
+      if (!this.selectedWork.workName) {
+        alert('Пожалуйста, заполните все поля');
+        return;
       }
+      
+      // Обновляем работу через сервис
+      this.dataService.updateWork({...this.selectedWork});
       this.selectedWork = null;
     }
   }
   
-  // Удаление записи о работе по теме
+  /**
+   * Удаление записи о работе по теме
+   * @param topic Код темы
+   * @param work Код работы
+   * @param dept Номер подразделения
+   */
   deleteWorkOnTopic(topic: string, work: string, dept: number): void {
     if (confirm('Вы уверены, что хотите удалить эту запись?')) {
-      this.workOnTopics = this.workOnTopics.filter(wot => 
-        !(wot.topicCode === topic && wot.workCode === work && wot.departmentNumber === dept)
-      );
+      // Удаляем запись через сервис
+      this.dataService.deleteWorkOnTopic(topic, work, dept);
     }
   }
   
-  // Получение имени подразделения по его номеру
+  /**
+   * Удаление подразделения
+   * @param departmentNumber Номер подразделения
+   */
+  deleteDepartment(departmentNumber: number): void {
+    if (confirm('Вы уверены, что хотите удалить это подразделение?')) {
+      // Проверяем, используется ли подразделение в работах по темам
+      const usedInWorks = this.workOnTopics.some(wot => wot.departmentNumber === departmentNumber);
+      
+      if (usedInWorks) {
+        alert('Это подразделение нельзя удалить, так как оно выполняет работы по темам');
+        return;
+      }
+      
+      // Удаляем подразделение через сервис
+      this.dataService.deleteDepartment(departmentNumber);
+    }
+  }
+  
+  /**
+   * Удаление работы
+   * @param workCode Код работы
+   */
+  deleteWork(workCode: string): void {
+    if (confirm('Вы уверены, что хотите удалить эту работу?')) {
+      // Проверяем, используется ли работа в работах по темам
+      const usedInWorks = this.workOnTopics.some(wot => wot.workCode === workCode);
+      
+      if (usedInWorks) {
+        alert('Эту работу нельзя удалить, так как она используется в работах по темам');
+        return;
+      }
+      
+      // Удаляем работу через сервис
+      this.dataService.deleteWork(workCode);
+    }
+  }
+  
+  /**
+   * Получение имени подразделения по его номеру
+   * @param deptNumber Номер подразделения
+   * @returns Название подразделения
+   */
   getDepartmentName(deptNumber: number): string {
-    const dept = this.departments.find(d => d.departmentNumber === deptNumber);
-    return dept ? dept.departmentName : 'Неизвестное подразделение';
+    return this.dataService.getDepartmentName(deptNumber);
   }
   
-  // Получение названия работы по коду
+  /**
+   * Получение названия работы по коду
+   * @param workCode Код работы
+   * @returns Название работы
+   */
   getWorkName(workCode: string): string {
-    const work = this.works.find(w => w.workCode === workCode);
-    return work ? work.workName : 'Неизвестная работа';
+    return this.dataService.getWorkName(workCode);
   }
   
-  // Получение названия темы по коду
+  /**
+   * Получение названия темы по коду
+   * @param topicCode Код темы
+   * @returns Название темы
+   */
   getTopicName(topicCode: string): string {
-    const topic = this.topics.find(t => t.topicCode === topicCode);
-    return topic ? topic.topicName : 'Неизвестная тема';
-  }
-  
-  // Инициализация данными для демонстрации
-  private initializeData(): void {
-    // Инициализация руководителей
-    this.managers = [
-      { managerFullName: 'Словова Арина Васильевна', phone: '89176547896', position: 'старший преподаватель' },
-      { managerFullName: 'Слугин Аристарх Максимович', phone: '89371029384', position: 'доцент' },
-      { managerFullName: 'Игнатьева Алина Васильевна', phone: '89278677687', position: 'доцент' },
-      { managerFullName: 'Агофонов Андрей Викторович', phone: '89170098861', position: 'профессор' },
-      { managerFullName: 'Семченко Аркадий Федорович', phone: '89370989651', position: 'доцент' },
-    ];
-    
-    // Инициализация подразделений
-    this.departments = [
-      { departmentNumber: 10, departmentName: 'Ученый совет', managerFullName: 'Словова Арина Васильевна' },
-      { departmentNumber: 11, departmentName: 'Научно-исследовательское общество', managerFullName: 'Агофонов Андрей Викторович' },
-      { departmentNumber: 12, departmentName: 'Учебный отдел', managerFullName: 'Слугин Аристарх Максимович' },
-      { departmentNumber: 13, departmentName: 'Факультет дополнительного образования', managerFullName: 'Игнатьева Алина Васильевна' },
-      { departmentNumber: 16, departmentName: 'Общество защиты животных', managerFullName: 'Семченко Аркадий Федорович' }
-    ];
-    
-    // Инициализация работ
-    this.works = [
-      { workCode: '1q', workName: 'Анализ данных' },
-      { workCode: '2q', workName: 'Сбор данных' },
-      { workCode: '3q', workName: 'Построение модели' },
-      { workCode: '4q', workName: 'Проверка данных' },
-      { workCode: '5q', workName: 'Сопоставление данных с моделью' }
-    ];
-    
-    // Инициализация работ по темам
-    const today = new Date(2024, 0, 1); // 1 января 2024
-    const endDate = new Date(2025, 0, 1); // 1 января 2025
-    
-    this.workOnTopics = [
-      { topicCode: '1t', workCode: '1q', departmentNumber: 10, startDate: today, endDate: endDate },
-      { topicCode: '1t', workCode: '2q', departmentNumber: 13, startDate: today, endDate: endDate },
-      { topicCode: '3t', workCode: '2q', departmentNumber: 12, startDate: today, endDate: endDate },
-      { topicCode: '5t', workCode: '4q', departmentNumber: 11, startDate: today, endDate: endDate }
-    ];
-    
-    // Инициализация формы нового подразделения
-    this.newDepartment.departmentNumber = this.getNextDepartmentNumber();
+    return this.dataService.getTopicName(topicCode);
   }
 }

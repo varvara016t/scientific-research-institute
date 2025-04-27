@@ -1,59 +1,84 @@
-# ScientificResearchInstitute
+# Научно-исследовательский институт "Наука"
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 19.2.9.
+Приложение для управления данными научно-исследовательского института. Разработано с использованием Angular 19.
 
-## Development server
+## Описание проекта
 
-To start a local development server, run:
+Приложение "НИИ Наука" предназначено для учета и управления:
+- Темами научных исследований и их руководителями
+- Подразделениями института
+- Договорами на выполнение работ
+- Работами, выполняемыми подразделениями по темам
+
+Приложение имеет три основных раздела:
+1. **Темы и руководители** - управление темами исследований и данными о руководителях
+2. **Подразделения** - управление подразделениями и работами, а также связь работ с темами и подразделениями
+3. **Договоры** - управление договорами и их статистика
+
+## Структура базы данных
+
+Приложение работает с следующими сущностями:
+- **Работа** - код работы, наименование
+- **Руководитель** - ФИО, телефон, должность
+- **Подразделение** - номер, наименование, ФИО руководителя
+- **Тема** - шифр, наименование, ФИО руководителя
+- **Работа по теме, выполняемая подразделением** - связывает темы, работы и подразделения с датами начала и окончания
+- **Договор** - номер, шифр темы, срок сдачи, дата заключения, сумма
+
+## Технологии
+
+- Angular 19
+- TypeScript
+- Angular SSR (Server-Side Rendering)
+- Reactive Forms
+- RxJS
+
+## Запуск проекта
+
+### Требования
+
+- Node.js (18.x или выше)
+- npm (9.x или выше)
+
+### Установка зависимостей
+
+```bash
+npm install
+```
+
+### Запуск в режиме разработки
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+После запуска сервера откройте браузер и перейдите по адресу `http://localhost:4200/`.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+### Сборка проекта
 
 ```bash
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Результаты сборки будут размещены в директории `dist/`.
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+### Запуск тестов
 
 ```bash
 ng test
 ```
 
-## Running end-to-end tests
+## Структура проекта
 
-For end-to-end (e2e) testing, run:
+- `src/app/components/` - компоненты приложения (темы, подразделения, договоры)
+- `src/app/models/` - модели данных
+- `src/app/services/` - сервисы для работы с данными
+- `src/styles.css` - общие стили приложения
 
-```bash
-ng e2e
-```
+## Особенности реализации
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- Приложение построено на основе Angular 19 с использованием standalone компонентов
+- Реализована серверная маршрутизация (Server-Side Rendering)
+- Данные хранятся в памяти и инициализируются при запуске приложения
+- Реализована валидация форм
+- Адаптивный дизайн для различных устройств

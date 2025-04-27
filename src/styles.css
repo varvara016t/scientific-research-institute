@@ -1,3 +1,6 @@
+/* Импорт переменных */
+@import './styles/_variables.css';
+
 /* Сброс стилей и основные настройки */
 * {
     margin: 0;
@@ -8,24 +11,24 @@
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Roboto', Arial, sans-serif;
-    background-color: #f5f7fa;
-    color: #333;
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--foreground-color);
     line-height: 1.6;
 }
 
 /* Основные контейнеры */
 .container {
-    max-width: 1200px;
+    max-width: var(--container-max-width);
     margin: 0 auto;
-    padding: 0 15px;
+    padding: 0 var(--spacing-md);
 }
 
 .wrapper {
-    max-width: 1170px;
+    max-width: calc(var(--container-max-width) - 30px);
     margin-left: auto;
     margin-right: auto;
-    padding: 20px 16px;
+    padding: var(--spacing-lg) var(--spacing-md);
 }
 
 .snp-wrap {
@@ -39,12 +42,12 @@ body {
 /* Секции */
 .main-section {
     flex: 1;
-    margin: 15px;
+    margin: var(--spacing-md);
     min-width: 0;
     background-color: #fff;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: var(--spacing-xl);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-md);
 }
 
 aside.main-section {
@@ -55,7 +58,7 @@ aside.main-section {
 .grid-container {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    grid-gap: 20px;
+    grid-gap: var(--spacing-lg);
 }
 
 .flex-container {
@@ -65,31 +68,35 @@ aside.main-section {
 }
 
 .flex-item {
-    flex: 0 0 calc(33.33% - 20px);
-    margin-bottom: 20px;
+    flex: 0 0 calc(33.33% - var(--spacing-lg));
+    margin-bottom: var(--spacing-lg);
 }
 
 /* Таблицы */
 .data-table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 20px;
-    border-radius: 5px;
+    margin-bottom: var(--spacing-lg);
+    border-radius: var(--border-radius-md);
     overflow: hidden;
-    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
+    table-layout: fixed;
 }
 
 .data-table th, .data-table td {
-    border: 1px solid #e0e0e0;
-    padding: 12px 15px;
+    border: 1px solid var(--light-gray);
+    padding: 8px 10px;
     text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-wrap: break-word;
 }
 
 .data-table th {
-    background-color: #f5f7fa;
-    color: #333;
+    background-color: var(--background-color);
+    color: var(--foreground-color);
     font-weight: 500;
-    font-size: 14px;
+    font-size: var(--font-size-normal);
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
@@ -102,25 +109,55 @@ aside.main-section {
     background-color: #f0f4f8;
 }
 
+/* Стили для пустых данных */
+.no-data {
+    text-align: center;
+    color: var(--medium-gray);
+    font-style: italic;
+    padding: var(--spacing-lg) !important;
+}
+
+/* Стили для кнопки удаления */
+.delete-button {
+    background-color: var(--accent-color);
+    padding: 4px 8px;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.delete-button:hover {
+    background-color: #d32f2f;
+}
+
+/* Стили для кнопок действий */
+.action-select {
+    min-width: 200px;
+    max-width: 300px;
+}
+
+.action-button {
+    white-space: nowrap;
+}
+
 /* Формы */
 .form-container {
     background-color: #fff;
-    padding: 25px;
-    border-radius: 8px;
-    margin-bottom: 25px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    padding: var(--spacing-xl);
+    border-radius: var(--border-radius-lg);
+    margin-bottom: var(--spacing-xl);
+    box-shadow: var(--shadow-md);
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: var(--spacing-lg);
 }
 
 label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: var(--spacing-xs);
     font-weight: 500;
-    color: #333;
-    font-size: 14px;
+    color: var(--foreground-color);
+    font-size: var(--font-size-normal);
 }
 
 input[type="text"],
@@ -130,62 +167,87 @@ select,
 textarea {
     width: 100%;
     padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    border: 1px solid var(--light-gray);
+    border-radius: var(--border-radius-sm);
     box-sizing: border-box;
-    font-size: 14px;
-    transition: border-color 0.3s;
+    font-size: var(--font-size-normal);
+    transition: var(--transition-normal);
 }
 
 input:focus, select:focus, textarea:focus {
-    border-color: #3949ab;
+    border-color: var(--primary-light);
     outline: none;
     box-shadow: 0 0 0 3px rgba(57, 73, 171, 0.1);
 }
 
 button {
-    background-color: #3949ab;
+    background-color: var(--primary-light);
     color: white;
     border: none;
     padding: 10px 20px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    font-size: 14px;
+    font-size: var(--font-size-normal);
     font-weight: 500;
-    margin: 5px 0;
+    margin: var(--spacing-xs) 0;
     cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.3s;
+    border-radius: var(--border-radius-sm);
+    transition: var(--transition-normal);
 }
 
 button:hover {
-    background-color: #303f9f;
+    background-color: var(--primary-dark);
     transform: translateY(-1px);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-sm);
 }
 
 button:disabled {
-    background-color: #9e9e9e;
+    background-color: var(--medium-gray);
     cursor: not-allowed;
     transform: none;
     box-shadow: none;
 }
 
 .red-alert {
-    color: #f44336;
-    font-size: 13px;
-    margin-top: 5px;
+    color: var(--accent-color);
+    font-size: var(--font-size-small);
+    margin-top: var(--spacing-xs);
     padding: 5px 0;
+}
+
+/* Стили для кнопок действий в формах */
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: var(--spacing-md);
+}
+
+.save-button {
+    background-color: var(--success-color);
+    flex: 1;
+}
+
+.save-button:hover {
+    background-color: #388e3c;
+}
+
+.cancel-button {
+    background-color: var(--medium-gray);
+    flex: 1;
+}
+
+.cancel-button:hover {
+    background-color: var(--dark-gray);
 }
 
 /* Валидация форм */
 input.ng-touched.ng-invalid {
-    border: solid #f44336 2px;
+    border: solid var(--accent-color) 2px;
 }
 
 input.ng-touched.ng-valid {
-    border: solid #4caf50 2px;
+    border: solid var(--success-color) 2px;
 }
 
 /* Адаптивность */
@@ -201,23 +263,23 @@ input.ng-touched.ng-valid {
 
 /* Типография */
 h1, h2, h3, h4, h5, h6 {
-    margin-bottom: 15px;
-    color: #333;
+    margin-bottom: var(--spacing-md);
+    color: var(--foreground-color);
     font-weight: 500;
 }
 
 h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
-    color: #1a237e;
+    font-size: var(--font-size-xxlarge);
+    margin-bottom: var(--spacing-lg);
+    color: var(--primary-color);
 }
 
 h3 {
-    font-size: 18px;
-    margin-bottom: 15px;
+    font-size: var(--font-size-xlarge);
+    margin-bottom: var(--spacing-md);
 }
 
 p {
-    margin-bottom: 15px;
+    margin-bottom: var(--spacing-md);
     line-height: 1.6;
 }

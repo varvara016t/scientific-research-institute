@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule, NgModel } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Topic, Manager } from '../../models/models';
+import { DataService } from '../../services/data.service';
 
 @Component({
   selector: 'app-topics',
@@ -41,14 +42,34 @@ export class TopicsComponent implements OnInit {
   // Список должностей для выбора
   positions: string[] = ['профессор', 'доцент', 'старший преподаватель', 'научный сотрудник'];
   
-  constructor() { }
+  /**
+   * Конструктор с инжекцией сервиса данных
+   */
+  constructor(private dataService: DataService) { }
   
+  /**
+   * Инициализация компонента - загрузка данных из сервиса
+   */
   ngOnInit(): void {
-    // Инициализация данными (в реальности здесь будет запрос к API)
-    this.initializeData();
+    // Получаем данные из сервиса
+    this.managers = this.dataService.getManagers();
+    this.topics = this.dataService.getTopics();
+    
+    // Подписываемся на изменения данных
+    this.dataService.managers$.subscribe(managers => {
+      this.managers = managers;
+    });
+    
+    this.dataService.topics$.subscribe(topics => {
+      this.topics = topics;
+    });
   }
   
-  // Добавление новой темы
+  /**
+   * Добавление новой темы
+   * @param titlein Элемент NgModel для названия темы
+   * @param managerin Элемент NgModel для руководителя темы
+   */
   addTopic(titlein: NgModel, managerin: NgModel): void {
     // Проверяем, что код темы не существует
     if (this.topics.some(topic => topic.topicCode === this.newTopic.topicCode)) {
@@ -56,13 +77,18 @@ export class TopicsComponent implements OnInit {
       return;
     }
     
-    this.topics.push({...this.newTopic});
+    // Добавляем тему через сервис
+    this.dataService.addTopic({...this.newTopic});
+    
+    // Сбрасываем валидацию и форму
     titlein.control.markAsUntouched();
     managerin.control.markAsUntouched();
     this.resetTopicForm();
   }
   
-  // Сброс формы темы
+  /**
+   * Сброс формы темы
+   */
   resetTopicForm(): void {
     this.newTopic = {
       topicCode: '',
@@ -71,7 +97,11 @@ export class TopicsComponent implements OnInit {
     };
   }
   
-  // Добавление нового руководителя
+  /**
+   * Добавление нового руководителя
+   * @param namein Элемент NgModel для ФИО руководителя
+   * @param phonein Элемент NgModel для телефона руководителя
+   */
   addManager(namein: NgModel, phonein: NgModel): void {
     // Проверяем, что руководитель не существует
     if (this.managers.some(manager => manager.managerFullName === this.newManager.managerFullName)) {
@@ -79,13 +109,18 @@ export class TopicsComponent implements OnInit {
       return;
     }
     
-    this.managers.push({...this.newManager});
+    // Добавляем руководителя через сервис
+    this.dataService.addManager({...this.newManager});
+    
+    // Сбрасываем валидацию и форму
     namein.control.markAsUntouched();
     phonein.control.markAsUntouched();
     this.resetManagerForm();
   }
   
-  // Сброс формы руководителя
+  /**
+   * Сброс формы руководителя
+   */
   resetManagerForm(): void {
     this.newManager = {
       managerFullName: '',
@@ -94,71 +129,121 @@ export class TopicsComponent implements OnInit {
     };
   }
   
-  // Загрузка темы для редактирования
+  /**
+   * Загрузка темы для редактирования
+   */
   loadTopicForEditing(): void {
+    if (!this.selectedTopicCode) {
+      alert('Пожалуйста, выберите тему для редактирования');
+      return;
+    }
+    
     const topicToEdit = this.topics.find(topic => topic.topicCode === this.selectedTopicCode);
     if (topicToEdit) {
       this.selectedTopic = {...topicToEdit};
+    } else {
+      alert('Тема не найдена');
     }
   }
   
-  // Обновление темы
+  /**
+   * Обновление темы
+   */
   updateTopic(): void {
     if (this.selectedTopic) {
-      const index = this.topics.findIndex(topic => topic.topicCode === this.selectedTopic!.topicCode);
-      if (index !== -1) {
-        this.topics[index] = {...this.selectedTopic};
+      // Проверка на валидность данных
+      if (!this.selectedTopic.topicName || !this.selectedTopic.managerFullName) {
+        alert('Пожалуйста, заполните все поля');
+        return;
       }
+      
+      // Обновляем тему через сервис
+      this.dataService.updateTopic({...this.selectedTopic});
       this.selectedTopic = null;
     }
   }
   
-  // Загрузка руководителя для редактирования
+  /**
+   * Загрузка руководителя для редактирования
+   */
   loadManagerForEditing(): void {
+    if (!this.selectedManagerName) {
+      alert('Пожалуйста, выберите руководителя для редактирования');
+      return;
+    }
+    
     const managerToEdit = this.managers.find(manager => manager.managerFullName === this.selectedManagerName);
     if (managerToEdit) {
       this.selectedManager = {...managerToEdit};
+    } else {
+      alert('Руководитель не найден');
     }
   }
   
-  // Обновление руководителя
+  /**
+   * Обновление руководителя
+   */
   updateManager(): void {
     if (this.selectedManager) {
-      const index = this.managers.findIndex(manager => manager.managerFullName === this.selectedManager!.managerFullName);
-      if (index !== -1) {
-        this.managers[index] = {...this.selectedManager};
+      // Проверка на валидность данных
+      if (!this.selectedManager.phone || !this.selectedManager.position) {
+        alert('Пожалуйста, заполните все поля');
+        return;
       }
+      
+      // Обновляем руководителя через сервис
+      this.dataService.updateManager({...this.selectedManager});
       this.selectedManager = null;
     }
   }
   
-  // Проверка формата телефона
+  /**
+   * Удаление темы
+   */
+  deleteTopic(topicCode: string): void {
+    if (confirm('Вы уверены, что хотите удалить эту тему?')) {
+      // Проверяем, используется ли тема в договорах или работах
+      const usedInContracts = this.dataService.getContracts().some(contract => contract.topicCode === topicCode);
+      const usedInWorks = this.dataService.getWorkOnTopics().some(work => work.topicCode === topicCode);
+      
+      if (usedInContracts || usedInWorks) {
+        alert('Эту тему нельзя удалить, так как она используется в договорах или работах');
+        return;
+      }
+      
+      // Удаляем тему через сервис
+      this.dataService.deleteTopic(topicCode);
+    }
+  }
+  
+  /**
+   * Удаление руководителя
+   */
+  deleteManager(managerFullName: string): void {
+    if (confirm('Вы уверены, что хотите удалить этого руководителя?')) {
+      // Проверяем, используется ли руководитель в темах или подразделениях
+      const usedInTopics = this.dataService.getTopics().some(topic => topic.managerFullName === managerFullName);
+      const usedInDepartments = this.dataService.getDepartments().some(dept => dept.managerFullName === managerFullName);
+      
+      if (usedInTopics || usedInDepartments) {
+        alert('Этого руководителя нельзя удалить, так как он назначен на темы или подразделения');
+        return;
+      }
+      
+      // Удаляем руководителя через сервис
+      this.dataService.deleteManager(managerFullName);
+    }
+  }
+  
+  /**
+   * Проверка формата телефона
+   * @param event Событие ввода
+   */
   validatePhone(event: any): void {
     const input = event.target.value;
     const formattedInput = input
       .replace(/\D/g, '')
       .substring(0, 11);
     event.target.value = formattedInput;
-  }
-  
-  // Инициализация данными для демонстрации
-  private initializeData(): void {
-    // Добавляем руководителей
-    this.managers = [
-      { managerFullName: 'Баров Игорь Олегович', phone: '89371089784', position: 'профессор' },
-      { managerFullName: 'Семченко Аркадий Федорович', phone: '89370989651', position: 'доцент' },
-      { managerFullName: 'Зоткина Людмила Прокофьевна', phone: '89278390269', position: 'профессор' },
-      { managerFullName: 'Краснова Ирина Сергеевна', phone: '89176878966', position: 'профессор' },
-      { managerFullName: 'Агофонов Андрей Викторович', phone: '89170098861', position: 'профессор' }
-    ];
-    
-    // Добавляем темы
-    this.topics = [
-      { topicCode: '1t', topicName: 'экология', managerFullName: 'Семченко Аркадий Федорович' },
-      { topicCode: '2t', topicName: 'зоология', managerFullName: 'Семченко Аркадий Федорович' },
-      { topicCode: '3t', topicName: 'информатика', managerFullName: 'Зоткина Людмила Прокофьевна' },
-      { topicCode: '4t', topicName: 'математика', managerFullName: 'Краснова Ирина Сергеевна' },
-      { topicCode: '5t', topicName: 'философия', managerFullName: 'Агофонов Андрей Викторович' }
-    ];
   }
 }

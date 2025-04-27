@@ -2,13 +2,14 @@
     <div class="snp-wrap">
         <main class="main-section">
             <div style="padding-bottom: 30px;">
-                <div style="display: flex; justify-content: space-between;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
                     <h2>Список тем</h2>
-                    <div style="display: flex; align-items: center;" *ngIf="topics.length > 0">
-                        <select style="width: auto;" [(ngModel)]="selectedTopicCode">
+                    <div style="display: flex; align-items: center; margin-top: 10px;" *ngIf="topics.length > 0">
+                        <select class="action-select" [(ngModel)]="selectedTopicCode">
+                            <option value="">Выберите тему...</option>
                             <option *ngFor="let topic of topics" [value]="topic.topicCode">{{ topic.topicCode }} - {{ topic.topicName }}</option>
                         </select>
-                        <button style="margin-left: 10px" (click)="loadTopicForEditing()">Изменить тему</button>
+                        <button class="action-button" (click)="loadTopicForEditing()">Изменить</button>
                     </div>
                 </div>
             </div>
@@ -18,24 +19,32 @@
                     <th>Шифр темы</th>
                     <th>Наименование</th>
                     <th>ФИО руководителя</th>
+                    <th>Действия</th>
                 </tr>
                 <tr *ngFor="let topic of topics">
                     <td>{{ topic.topicCode }}</td>
                     <td>{{ topic.topicName }}</td>
                     <td>{{ topic.managerFullName }}</td>
+                    <td>
+                        <button class="delete-button" (click)="deleteTopic(topic.topicCode)">Удалить</button>
+                    </td>
+                </tr>
+                <tr *ngIf="topics.length === 0">
+                    <td colspan="4" class="no-data">Нет данных о темах</td>
                 </tr>
             </table>
             
             <div style="padding-bottom: 30px; margin-top: 50px;">
-                <div style="display: flex; justify-content: space-between;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
                     <h2>Список руководителей</h2>
-                    <div style="display: flex; align-items: center;" *ngIf="managers.length > 0">
-                        <select style="width: auto;" [(ngModel)]="selectedManagerName">
+                    <div style="display: flex; align-items: center; margin-top: 10px;" *ngIf="managers.length > 0">
+                        <select class="action-select" [(ngModel)]="selectedManagerName">
+                            <option value="">Выберите руководителя...</option>
                             <option *ngFor="let manager of managers" [value]="manager.managerFullName">
                                 {{ manager.managerFullName }}
                             </option>
                         </select>
-                        <button style="margin-left: 10px" (click)="loadManagerForEditing()">Изменить руководителя</button>
+                        <button class="action-button" (click)="loadManagerForEditing()">Изменить</button>
                     </div>
                 </div>
             </div>
@@ -45,11 +54,18 @@
                     <th>ФИО руководителя</th>
                     <th>Телефон</th>
                     <th>Должность</th>
+                    <th>Действия</th>
                 </tr>
                 <tr *ngFor="let manager of managers">
                     <td>{{ manager.managerFullName }}</td>
                     <td>{{ manager.phone }}</td>
                     <td>{{ manager.position }}</td>
+                    <td>
+                        <button class="delete-button" (click)="deleteManager(manager.managerFullName)">Удалить</button>
+                    </td>
+                </tr>
+                <tr *ngIf="managers.length === 0">
+                    <td colspan="4" class="no-data">Нет данных о руководителях</td>
                 </tr>
             </table>
         </main>
@@ -77,6 +93,7 @@
                 <div class="form-group">
                     <label>Руководитель</label>
                     <select [(ngModel)]="newTopic.managerFullName" name="managerFullName" #managerInput="ngModel" required>
+                        <option value="">Выберите руководителя...</option>
                         <option *ngFor="let manager of managers" [value]="manager.managerFullName">
                             {{ manager.managerFullName }}
                         </option>
@@ -115,6 +132,7 @@
                 <div class="form-group">
                     <label>Должность</label>
                     <select [(ngModel)]="newManager.position" name="position" required>
+                        <option value="">Выберите должность...</option>
                         <option *ngFor="let position of positions" [value]="position">{{ position }}</option>
                     </select>
                 </div>
@@ -151,9 +169,14 @@
                     </select>
                 </div>
                 
-                <button (click)="updateTopic()" [disabled]="editTitleInput.invalid">
-                    Сохранить изменения
-                </button>
+                <div class="form-actions">
+                    <button (click)="updateTopic()" [disabled]="editTitleInput.invalid" class="save-button">
+                        Сохранить изменения
+                    </button>
+                    <button (click)="selectedTopic = null" class="cancel-button">
+                        Отмена
+                    </button>
+                </div>
             </div>
             
             <!-- Форма редактирования руководителя -->
@@ -181,9 +204,14 @@
                     </select>
                 </div>
                 
-                <button (click)="updateManager()" [disabled]="editPhoneInput.invalid">
-                    Сохранить изменения
-                </button>
+                <div class="form-actions">
+                    <button (click)="updateManager()" [disabled]="editPhoneInput.invalid" class="save-button">
+                        Сохранить изменения
+                    </button>
+                    <button (click)="selectedManager = null" class="cancel-button">
+                        Отмена
+                    </button>
+                </div>
             </div>
         </aside>
     </div>

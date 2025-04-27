@@ -1,2 +1,37 @@
-/* Импортируем общие стили */
-@import '../../../styles.css';
+/* Специфичные стили для компонента тем */
+
+/* Стилизация выпадающих списков в формах тем */
+.form-group select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%233949ab' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding-right: 30px;
+}
+
+/* Дополнительная стилизация таблиц на этой странице */
+.data-table tr td:first-child {
+    font-weight: 500;
+    color: var(--primary-dark);
+}
+
+/* Анимация для добавления новых элементов */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.data-table tr {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Улучшения для форм редактирования */
+.form-container {
+    transition: var(--transition-normal);
+}
+
+.form-container:hover {
+    box-shadow: var(--shadow-lg);
+}

@@ -2,15 +2,16 @@
     <div class="snp-wrap">
         <main class="main-section">
             <div style="padding-bottom: 30px;">
-                <div style="display: flex; justify-content: space-between;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
                     <h2>Список подразделений</h2>
-                    <div style="display: flex; align-items: center;" *ngIf="departments.length > 0">
-                        <select style="width: auto;" [(ngModel)]="selectedDepartmentNumber">
-                            <option *ngFor="let dept of departments" [value]="dept.departmentNumber">
+                    <div style="display: flex; align-items: center; margin-top: 10px;" *ngIf="departments.length > 0">
+                        <select class="action-select" [(ngModel)]="selectedDepartmentNumber">
+                            <option [ngValue]="0">Выберите подразделение...</option>
+                            <option *ngFor="let dept of departments" [ngValue]="dept.departmentNumber">
                                 {{ dept.departmentNumber }} - {{ dept.departmentName }}
                             </option>
                         </select>
-                        <button style="margin-left: 10px" (click)="loadDepartmentForEditing()">Изменить подразделение</button>
+                        <button class="action-button" (click)="loadDepartmentForEditing()">Изменить</button>
                     </div>
                 </div>
             </div>
@@ -20,24 +21,32 @@
                     <th>Номер</th>
                     <th>Наименование</th>
                     <th>ФИО руководителя</th>
+                    <th>Действия</th>
                 </tr>
                 <tr *ngFor="let dept of departments">
                     <td>{{ dept.departmentNumber }}</td>
                     <td>{{ dept.departmentName }}</td>
                     <td>{{ dept.managerFullName }}</td>
+                    <td>
+                        <button class="delete-button" (click)="deleteDepartment(dept.departmentNumber)">Удалить</button>
+                    </td>
+                </tr>
+                <tr *ngIf="departments.length === 0">
+                    <td colspan="4" class="no-data">Нет данных о подразделениях</td>
                 </tr>
             </table>
             
             <div style="padding-bottom: 30px; margin-top: 50px;">
-                <div style="display: flex; justify-content: space-between;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
                     <h2>Список работ</h2>
-                    <div style="display: flex; align-items: center;" *ngIf="works.length > 0">
-                        <select style="width: auto;" [(ngModel)]="selectedWorkCode">
+                    <div style="display: flex; align-items: center; margin-top: 10px;" *ngIf="works.length > 0">
+                        <select class="action-select" [(ngModel)]="selectedWorkCode">
+                            <option value="">Выберите работу...</option>
                             <option *ngFor="let work of works" [value]="work.workCode">
                                 {{ work.workCode }} - {{ work.workName }}
                             </option>
                         </select>
-                        <button style="margin-left: 10px" (click)="loadWorkForEditing()">Изменить работу</button>
+                        <button class="action-button" (click)="loadWorkForEditing()">Изменить</button>
                     </div>
                 </div>
             </div>
@@ -46,10 +55,17 @@
                 <tr>
                     <th>Код работы</th>
                     <th>Наименование работы</th>
+                    <th>Действия</th>
                 </tr>
                 <tr *ngFor="let work of works">
                     <td>{{ work.workCode }}</td>
                     <td>{{ work.workName }}</td>
+                    <td>
+                        <button class="delete-button" (click)="deleteWork(work.workCode)">Удалить</button>
+                    </td>
+                </tr>
+                <tr *ngIf="works.length === 0">
+                    <td colspan="3" class="no-data">Нет данных о работах</td>
                 </tr>
             </table>
             
@@ -73,10 +89,13 @@
                     <td>{{ wot.startDate | date:'dd.MM.yyyy' }}</td>
                     <td>{{ wot.endDate | date:'dd.MM.yyyy' }}</td>
                     <td>
-                        <button (click)="deleteWorkOnTopic(wot.topicCode, wot.workCode, wot.departmentNumber)">
+                        <button class="delete-button" (click)="deleteWorkOnTopic(wot.topicCode, wot.workCode, wot.departmentNumber)">
                             Удалить
                         </button>
                     </td>
+                </tr>
+                <tr *ngIf="workOnTopics.length === 0">
+                    <td colspan="6" class="no-data">Нет данных о работах по темам</td>
                 </tr>
             </table>
         </main>
@@ -101,6 +120,7 @@
                 <div class="form-group">
                     <label>Руководитель</label>
                     <select [(ngModel)]="newDepartment.managerFullName" name="managerFullName" #managerInput="ngModel" required>
+                        <option value="">Выберите руководителя...</option>
                         <option *ngFor="let manager of managers" [value]="manager.managerFullName">
                             {{ manager.managerFullName }}
                         </option>
@@ -147,6 +167,7 @@
                 <div class="form-group">
                     <label>Тема</label>
                     <select [(ngModel)]="newWorkOnTopic.topicCode" name="topicCode" #topicInput="ngModel" required>
+                        <option value="">Выберите тему...</option>
                         <option *ngFor="let topic of topics" [value]="topic.topicCode">
                             {{ topic.topicName }}
                         </option>
@@ -159,6 +180,7 @@
                 <div class="form-group">
                     <label>Работа</label>
                     <select [(ngModel)]="newWorkOnTopic.workCode" name="workCode" #workInput="ngModel" required>
+                        <option value="">Выберите работу...</option>
                         <option *ngFor="let work of works" [value]="work.workCode">
                             {{ work.workName }}
                         </option>
@@ -171,7 +193,8 @@
                 <div class="form-group">
                     <label>Подразделение</label>
                     <select [(ngModel)]="newWorkOnTopic.departmentNumber" name="departmentNumber" #deptInput="ngModel" required>
-                        <option *ngFor="let dept of departments" [value]="dept.departmentNumber">
+                        <option [ngValue]="0">Выберите подразделение...</option>
+                        <option *ngFor="let dept of departments" [ngValue]="dept.departmentNumber">
                             {{ dept.departmentName }}
                         </option>
                     </select>
@@ -197,7 +220,7 @@
                 </div>
                 
                 <button (click)="addWorkOnTopic(topicInput, workInput, deptInput, startInput, endInput)" 
-                        [disabled]="topicInput.invalid || workInput.invalid || deptInput.invalid || startInput.invalid || endInput.invalid">
+                        [disabled]="topicInput.invalid || workInput.invalid || deptInput.invalid || startInput.invalid || endInput.invalid || newWorkOnTopic.departmentNumber === 0">
                     Добавить запись
                 </button>
             </div>
@@ -228,9 +251,14 @@
                     </select>
                 </div>
                 
-                <button (click)="updateDepartment()" [disabled]="editNameInput.invalid">
-                    Сохранить изменения
-                </button>
+                <div class="form-actions">
+                    <button (click)="updateDepartment()" [disabled]="editNameInput.invalid" class="save-button">
+                        Сохранить изменения
+                    </button>
+                    <button (click)="selectedDepartment = null" class="cancel-button">
+                        Отмена
+                    </button>
+                </div>
             </div>
             
             <!-- Форма редактирования работы -->
@@ -250,9 +278,14 @@
                     </div>
                 </div>
                 
-                <button (click)="updateWork()" [disabled]="editWorkNameInput.invalid">
-                    Сохранить изменения
-                </button>
+                <div class="form-actions">
+                    <button (click)="updateWork()" [disabled]="editWorkNameInput.invalid" class="save-button">
+                        Сохранить изменения
+                    </button>
+                    <button (click)="selectedWork = null" class="cancel-button">
+                        Отмена
+                    </button>
+                </div>
             </div>
         </aside>
     </div>

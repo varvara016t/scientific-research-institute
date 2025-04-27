@@ -1,2 +1,44 @@
-/* Импортируем общие стили */
-@import '../../../styles.css';
+/* Специфичные стили для компонента подразделений */
+
+/* Стилизация выпадающих списков в формах подразделений */
+.form-group select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%233949ab' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px;
+    padding-right: 30px;
+}
+
+/* Стилизация списка работ по темам */
+.data-table tr td:nth-child(3) {
+    font-weight: 500;
+}
+
+/* Стилизация кнопок удаления */
+.data-table button {
+    padding: 5px 10px;
+    font-size: 12px;
+    background-color: var(--accent-color);
+}
+
+.data-table button:hover {
+    background-color: #d32f2f; /* Темнее красный при наведении */
+}
+
+/* Анимация для форм редактирования */
+.form-container {
+    transition: var(--transition-normal);
+}
+
+.form-container:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+/* Дополнительные стили для дат в таблице */
+.data-table tr td:nth-child(4),
+.data-table tr td:nth-child(5) {
+    white-space: nowrap;
+    color: var(--dark-gray);
+}
