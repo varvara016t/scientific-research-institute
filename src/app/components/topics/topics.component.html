@@ -1,0 +1,190 @@
+<div class="wrapper">
+    <div class="snp-wrap">
+        <main class="main-section">
+            <div style="padding-bottom: 30px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <h2>Список тем</h2>
+                    <div style="display: flex; align-items: center;" *ngIf="topics.length > 0">
+                        <select style="width: auto;" [(ngModel)]="selectedTopicCode">
+                            <option *ngFor="let topic of topics" [value]="topic.topicCode">{{ topic.topicCode }} - {{ topic.topicName }}</option>
+                        </select>
+                        <button style="margin-left: 10px" (click)="loadTopicForEditing()">Изменить тему</button>
+                    </div>
+                </div>
+            </div>
+            
+            <table class="data-table">
+                <tr>
+                    <th>Шифр темы</th>
+                    <th>Наименование</th>
+                    <th>ФИО руководителя</th>
+                </tr>
+                <tr *ngFor="let topic of topics">
+                    <td>{{ topic.topicCode }}</td>
+                    <td>{{ topic.topicName }}</td>
+                    <td>{{ topic.managerFullName }}</td>
+                </tr>
+            </table>
+            
+            <div style="padding-bottom: 30px; margin-top: 50px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <h2>Список руководителей</h2>
+                    <div style="display: flex; align-items: center;" *ngIf="managers.length > 0">
+                        <select style="width: auto;" [(ngModel)]="selectedManagerName">
+                            <option *ngFor="let manager of managers" [value]="manager.managerFullName">
+                                {{ manager.managerFullName }}
+                            </option>
+                        </select>
+                        <button style="margin-left: 10px" (click)="loadManagerForEditing()">Изменить руководителя</button>
+                    </div>
+                </div>
+            </div>
+            
+            <table class="data-table">
+                <tr>
+                    <th>ФИО руководителя</th>
+                    <th>Телефон</th>
+                    <th>Должность</th>
+                </tr>
+                <tr *ngFor="let manager of managers">
+                    <td>{{ manager.managerFullName }}</td>
+                    <td>{{ manager.phone }}</td>
+                    <td>{{ manager.position }}</td>
+                </tr>
+            </table>
+        </main>
+        
+        <aside class="main-section">
+            <div class="form-container">
+                <h2>Добавление темы</h2>
+                
+                <div class="form-group">
+                    <label>Шифр темы</label>
+                    <input name="topicCode" [(ngModel)]="newTopic.topicCode" #codeInput="ngModel" required maxlength="10" />
+                    <div [hidden]="codeInput.valid || codeInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Наименование темы</label>
+                    <input name="topicName" [(ngModel)]="newTopic.topicName" #titleInput="ngModel" required />
+                    <div [hidden]="titleInput.valid || titleInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Руководитель</label>
+                    <select [(ngModel)]="newTopic.managerFullName" name="managerFullName" #managerInput="ngModel" required>
+                        <option *ngFor="let manager of managers" [value]="manager.managerFullName">
+                            {{ manager.managerFullName }}
+                        </option>
+                    </select>
+                    <div [hidden]="managerInput.valid || managerInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <button (click)="addTopic(titleInput, managerInput)" 
+                        [disabled]="codeInput.invalid || titleInput.invalid || managerInput.invalid">
+                    Добавить тему
+                </button>
+            </div>
+            
+            <div class="form-container" style="margin-top: 30px;">
+                <h2>Добавление руководителя</h2>
+                
+                <div class="form-group">
+                    <label>ФИО руководителя</label>
+                    <input name="managerFullName" [(ngModel)]="newManager.managerFullName" #nameInput="ngModel" required />
+                    <div [hidden]="nameInput.valid || nameInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Телефон</label>
+                    <input name="phone" [(ngModel)]="newManager.phone" #phoneInput="ngModel" required
+                           (input)="validatePhone($event)" placeholder="89XXXXXXXXX" />
+                    <div [hidden]="phoneInput.valid || phoneInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Должность</label>
+                    <select [(ngModel)]="newManager.position" name="position" required>
+                        <option *ngFor="let position of positions" [value]="position">{{ position }}</option>
+                    </select>
+                </div>
+                
+                <button (click)="addManager(nameInput, phoneInput)" 
+                        [disabled]="nameInput.invalid || phoneInput.invalid">
+                    Добавить руководителя
+                </button>
+            </div>
+            
+            <!-- Форма редактирования темы -->
+            <div class="form-container" *ngIf="selectedTopic" style="margin-top: 30px;">
+                <h2>Изменение темы</h2>
+                
+                <div class="form-group">
+                    <label>Шифр темы</label>
+                    <input name="selectedTopicCode" [ngModel]="selectedTopic.topicCode" disabled />
+                </div>
+                
+                <div class="form-group">
+                    <label>Наименование темы</label>
+                    <input name="selectedTopicName" [(ngModel)]="selectedTopic.topicName" #editTitleInput="ngModel" required />
+                    <div [hidden]="editTitleInput.valid || editTitleInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Руководитель</label>
+                    <select [(ngModel)]="selectedTopic.managerFullName" name="selectedManagerFullName" required>
+                        <option *ngFor="let manager of managers" [value]="manager.managerFullName">
+                            {{ manager.managerFullName }}
+                        </option>
+                    </select>
+                </div>
+                
+                <button (click)="updateTopic()" [disabled]="editTitleInput.invalid">
+                    Сохранить изменения
+                </button>
+            </div>
+            
+            <!-- Форма редактирования руководителя -->
+            <div class="form-container" *ngIf="selectedManager" style="margin-top: 30px;">
+                <h2>Изменение руководителя</h2>
+                
+                <div class="form-group">
+                    <label>ФИО руководителя</label>
+                    <input name="selectedManagerFullName" [ngModel]="selectedManager.managerFullName" disabled />
+                </div>
+                
+                <div class="form-group">
+                    <label>Телефон</label>
+                    <input name="selectedPhone" [(ngModel)]="selectedManager.phone" #editPhoneInput="ngModel" required
+                           (input)="validatePhone($event)" />
+                    <div [hidden]="editPhoneInput.valid || editPhoneInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Должность</label>
+                    <select [(ngModel)]="selectedManager.position" name="selectedPosition" required>
+                        <option *ngFor="let position of positions" [value]="position">{{ position }}</option>
+                    </select>
+                </div>
+                
+                <button (click)="updateManager()" [disabled]="editPhoneInput.invalid">
+                    Сохранить изменения
+                </button>
+            </div>
+        </aside>
+    </div>
+</div>

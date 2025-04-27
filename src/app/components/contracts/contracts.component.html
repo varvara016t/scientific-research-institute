@@ -1,0 +1,175 @@
+<div class="wrapper">
+  <div class="snp-wrap">
+      <main class="main-section">
+          <div style="padding-bottom: 30px;">
+              <div style="display: flex; justify-content: space-between;">
+                  <h2>Список договоров</h2>
+                  <div style="display: flex; align-items: center;" *ngIf="contracts.length > 0">
+                      <select style="width: auto;" [(ngModel)]="selectedContractNumber">
+                          <option *ngFor="let contract of contracts" [value]="contract.contractNumber">
+                              {{ contract.contractNumber }} - {{ getTopicName(contract.topicCode) }}
+                          </option>
+                      </select>
+                      <button style="margin-left: 10px" (click)="loadContractForEditing()">Изменить договор</button>
+                  </div>
+              </div>
+          </div>
+          
+          <div class="form-container">
+              <h3>Фильтр договоров</h3>
+              <div style="display: flex; align-items: center;">
+                  <div class="form-group" style="flex: 1; margin-right: 20px; margin-bottom: 0;">
+                      <label>Минимальная сумма</label>
+                      <input type="number" [(ngModel)]="minAmount" name="minAmount" />
+                  </div>
+                  <button (click)="applyFilter()">Применить фильтр</button>
+              </div>
+          </div>
+          
+          <table class="data-table">
+              <tr>
+                  <th>Номер договора</th>
+                  <th>Тема</th>
+                  <th>Дата заключения</th>
+                  <th>Срок сдачи</th>
+                  <th>Сумма</th>
+                  <th>Действия</th>
+              </tr>
+              <tr *ngFor="let contract of filteredContracts">
+                  <td>{{ contract.contractNumber }}</td>
+                  <td>{{ getTopicName(contract.topicCode) }}</td>
+                  <td>{{ formatDate(contract.conclusionDate) }}</td>
+                  <td>{{ formatDate(contract.completionDate) }}</td>
+                  <td>{{ contract.amount }} ₽</td>
+                  <td>
+                      <button (click)="deleteContract(contract.contractNumber)">
+                          Удалить
+                      </button>
+                  </td>
+              </tr>
+              <tr *ngIf="filteredContracts.length === 0">
+                  <td colspan="6" style="text-align: center;">Нет договоров, соответствующих фильтру</td>
+              </tr>
+          </table>
+          
+          <!-- Статистика по договорам -->
+          <div style="margin-top: 50px;">
+              <h2>Статистика по договорам</h2>
+              <div style="display: flex; justify-content: space-between;">
+                  <div class="form-container" style="flex: 1; margin-right: 20px;">
+                      <h3>Общая информация</h3>
+                      <p><strong>Всего договоров:</strong> {{ contracts.length }}</p>
+                      <p><strong>Общая сумма по договорам:</strong> {{ totalAmount }} ₽</p>
+                      <p><strong>Средняя сумма договора:</strong> {{ averageAmount }} ₽</p>
+                  </div>
+                  
+                  <div class="form-container" style="flex: 1;">
+                      <h3>Сроки</h3>
+                      <p><strong>Самый ранний срок сдачи:</strong> {{ earliestCompletionDate }}</p>
+                      <p><strong>Самый поздний срок сдачи:</strong> {{ latestCompletionDate }}</p>
+                  </div>
+              </div>
+          </div>
+      </main>
+      
+      <aside class="main-section">
+          <div class="form-container">
+              <h2>Добавление договора</h2>
+              
+              <div class="form-group">
+                  <label>Номер договора</label>
+                  <input type="number" name="contractNumber" [(ngModel)]="newContract.contractNumber" required />
+              </div>
+              
+              <div class="form-group">
+                  <label>Тема</label>
+                  <select [(ngModel)]="newContract.topicCode" name="topicCode" #topicInput="ngModel" required
+                          [disabled]="availableTopics.length === 0">
+                      <option *ngFor="let topic of availableTopics" [value]="topic.topicCode">
+                          {{ topic.topicName }}
+                      </option>
+                  </select>
+                  <div *ngIf="availableTopics.length === 0" class="red-alert">
+                      Нет доступных тем для создания договора!
+                  </div>
+                  <div [hidden]="topicInput.valid || topicInput.untouched" class="red-alert">
+                      Это поле обязательно для заполнения!
+                  </div>
+              </div>
+              
+              <div class="form-group">
+                  <label>Дата заключения договора</label>
+                  <input type="date" name="conclusionDate" [(ngModel)]="newContract.conclusionDate" #conclusionInput="ngModel" required />
+                  <div [hidden]="conclusionInput.valid || conclusionInput.untouched" class="red-alert">
+                      Это поле обязательно для заполнения!
+                  </div>
+              </div>
+              
+              <div class="form-group">
+                  <label>Срок сдачи</label>
+                  <input type="date" name="completionDate" [(ngModel)]="newContract.completionDate" #completionInput="ngModel" required />
+                  <div [hidden]="completionInput.valid || completionInput.untouched" class="red-alert">
+                      Это поле обязательно для заполнения!
+                  </div>
+              </div>
+              
+              <div class="form-group">
+                  <label>Сумма</label>
+                  <input type="number" name="amount" [(ngModel)]="newContract.amount" #amountInput="ngModel" required min="1" />
+                  <div [hidden]="amountInput.valid || amountInput.untouched" class="red-alert">
+                      Это поле обязательно для заполнения!
+                  </div>
+              </div>
+              
+              <button (click)="addContract(topicInput, completionInput, conclusionInput, amountInput)" 
+                      [disabled]="topicInput.invalid || completionInput.invalid || conclusionInput.invalid || amountInput.invalid || availableTopics.length === 0">
+                  Добавить договор
+              </button>
+          </div>
+          
+          <!-- Форма редактирования договора -->
+          <div class="form-container" *ngIf="selectedContract" style="margin-top: 30px;">
+              <h2>Изменение договора</h2>
+              
+              <div class="form-group">
+                  <label>Номер договора</label>
+                  <input type="number" name="selectedContractNumber" [ngModel]="selectedContract.contractNumber" disabled />
+              </div>
+              
+              <div class="form-group">
+                  <label>Тема</label>
+                  <input type="text" [ngModel]="getTopicName(selectedContract.topicCode)" disabled />
+              </div>
+              
+              <div class="form-group">
+                  <label>Дата заключения договора</label>
+                  <input type="date" name="selectedConclusionDate" [(ngModel)]="selectedContract.conclusionDate" #editConclusionInput="ngModel" required />
+                  <div [hidden]="editConclusionInput.valid || editConclusionInput.untouched" class="red-alert">
+                      Это поле обязательно для заполнения!
+                  </div>
+              </div>
+              
+              <div class="form-group">
+                  <label>Срок сдачи</label>
+                  <input type="date" name="selectedCompletionDate" [(ngModel)]="selectedContract.completionDate" #editCompletionInput="ngModel" required />
+                  <div [hidden]="editCompletionInput.valid || editCompletionInput.untouched" class="red-alert">
+                      Это поле обязательно для заполнения!
+                  </div>
+              </div>
+              
+              <div class="form-group">
+                  <label>Сумма</label>
+                  <input type="number" name="selectedAmount" [(ngModel)]="selectedContract.amount" #editAmountInput="ngModel" required min="1" />
+                  <div [hidden]="editAmountInput.valid || editAmountInput.untouched" class="red-alert">
+                      Это поле обязательно для заполнения!
+                  </div>
+              </div>
+              
+              <button (click)="updateContract()" 
+                      [disabled]="editConclusionInput.invalid || editCompletionInput.invalid || editAmountInput.invalid">
+                  Сохранить изменения
+              </button>
+          </div>
+      </aside>
+  </div>
+</div>

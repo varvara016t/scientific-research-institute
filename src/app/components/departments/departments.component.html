@@ -1,0 +1,259 @@
+<div class="wrapper">
+    <div class="snp-wrap">
+        <main class="main-section">
+            <div style="padding-bottom: 30px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <h2>Список подразделений</h2>
+                    <div style="display: flex; align-items: center;" *ngIf="departments.length > 0">
+                        <select style="width: auto;" [(ngModel)]="selectedDepartmentNumber">
+                            <option *ngFor="let dept of departments" [value]="dept.departmentNumber">
+                                {{ dept.departmentNumber }} - {{ dept.departmentName }}
+                            </option>
+                        </select>
+                        <button style="margin-left: 10px" (click)="loadDepartmentForEditing()">Изменить подразделение</button>
+                    </div>
+                </div>
+            </div>
+            
+            <table class="data-table">
+                <tr>
+                    <th>Номер</th>
+                    <th>Наименование</th>
+                    <th>ФИО руководителя</th>
+                </tr>
+                <tr *ngFor="let dept of departments">
+                    <td>{{ dept.departmentNumber }}</td>
+                    <td>{{ dept.departmentName }}</td>
+                    <td>{{ dept.managerFullName }}</td>
+                </tr>
+            </table>
+            
+            <div style="padding-bottom: 30px; margin-top: 50px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <h2>Список работ</h2>
+                    <div style="display: flex; align-items: center;" *ngIf="works.length > 0">
+                        <select style="width: auto;" [(ngModel)]="selectedWorkCode">
+                            <option *ngFor="let work of works" [value]="work.workCode">
+                                {{ work.workCode }} - {{ work.workName }}
+                            </option>
+                        </select>
+                        <button style="margin-left: 10px" (click)="loadWorkForEditing()">Изменить работу</button>
+                    </div>
+                </div>
+            </div>
+            
+            <table class="data-table">
+                <tr>
+                    <th>Код работы</th>
+                    <th>Наименование работы</th>
+                </tr>
+                <tr *ngFor="let work of works">
+                    <td>{{ work.workCode }}</td>
+                    <td>{{ work.workName }}</td>
+                </tr>
+            </table>
+            
+            <div style="padding-bottom: 30px; margin-top: 50px;">
+                <h2>Работы по темам выполняемые подразделениями</h2>
+            </div>
+            
+            <table class="data-table">
+                <tr>
+                    <th>Тема</th>
+                    <th>Работа</th>
+                    <th>Подразделение</th>
+                    <th>Дата начала</th>
+                    <th>Дата окончания</th>
+                    <th>Действия</th>
+                </tr>
+                <tr *ngFor="let wot of workOnTopics">
+                    <td>{{ getTopicName(wot.topicCode) }}</td>
+                    <td>{{ getWorkName(wot.workCode) }}</td>
+                    <td>{{ getDepartmentName(wot.departmentNumber) }}</td>
+                    <td>{{ wot.startDate | date:'dd.MM.yyyy' }}</td>
+                    <td>{{ wot.endDate | date:'dd.MM.yyyy' }}</td>
+                    <td>
+                        <button (click)="deleteWorkOnTopic(wot.topicCode, wot.workCode, wot.departmentNumber)">
+                            Удалить
+                        </button>
+                    </td>
+                </tr>
+            </table>
+        </main>
+        
+        <aside class="main-section">
+            <div class="form-container">
+                <h2>Добавление подразделения</h2>
+                
+                <div class="form-group">
+                    <label>Номер подразделения</label>
+                    <input type="number" name="departmentNumber" [(ngModel)]="newDepartment.departmentNumber" required />
+                </div>
+                
+                <div class="form-group">
+                    <label>Наименование подразделения</label>
+                    <input name="departmentName" [(ngModel)]="newDepartment.departmentName" #nameInput="ngModel" required />
+                    <div [hidden]="nameInput.valid || nameInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Руководитель</label>
+                    <select [(ngModel)]="newDepartment.managerFullName" name="managerFullName" #managerInput="ngModel" required>
+                        <option *ngFor="let manager of managers" [value]="manager.managerFullName">
+                            {{ manager.managerFullName }}
+                        </option>
+                    </select>
+                    <div [hidden]="managerInput.valid || managerInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <button (click)="addDepartment(nameInput, managerInput)" 
+                        [disabled]="nameInput.invalid || managerInput.invalid">
+                    Добавить подразделение
+                </button>
+            </div>
+            
+            <div class="form-container" style="margin-top: 30px;">
+                <h2>Добавление работы</h2>
+                
+                <div class="form-group">
+                    <label>Код работы</label>
+                    <input name="workCode" [(ngModel)]="newWork.workCode" #codeInput="ngModel" required maxlength="10" />
+                    <div [hidden]="codeInput.valid || codeInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Наименование работы</label>
+                    <input name="workName" [(ngModel)]="newWork.workName" #workNameInput="ngModel" required />
+                    <div [hidden]="workNameInput.valid || workNameInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <button (click)="addWork(codeInput, workNameInput)" 
+                        [disabled]="codeInput.invalid || workNameInput.invalid">
+                    Добавить работу
+                </button>
+            </div>
+            
+            <div class="form-container" style="margin-top: 30px;">
+                <h2>Добавление работы по теме</h2>
+                
+                <div class="form-group">
+                    <label>Тема</label>
+                    <select [(ngModel)]="newWorkOnTopic.topicCode" name="topicCode" #topicInput="ngModel" required>
+                        <option *ngFor="let topic of topics" [value]="topic.topicCode">
+                            {{ topic.topicName }}
+                        </option>
+                    </select>
+                    <div [hidden]="topicInput.valid || topicInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Работа</label>
+                    <select [(ngModel)]="newWorkOnTopic.workCode" name="workCode" #workInput="ngModel" required>
+                        <option *ngFor="let work of works" [value]="work.workCode">
+                            {{ work.workName }}
+                        </option>
+                    </select>
+                    <div [hidden]="workInput.valid || workInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Подразделение</label>
+                    <select [(ngModel)]="newWorkOnTopic.departmentNumber" name="departmentNumber" #deptInput="ngModel" required>
+                        <option *ngFor="let dept of departments" [value]="dept.departmentNumber">
+                            {{ dept.departmentName }}
+                        </option>
+                    </select>
+                    <div [hidden]="deptInput.valid || deptInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Дата начала</label>
+                    <input type="date" name="startDate" [(ngModel)]="newWorkOnTopic.startDate" #startInput="ngModel" required />
+                    <div [hidden]="startInput.valid || startInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Дата окончания</label>
+                    <input type="date" name="endDate" [(ngModel)]="newWorkOnTopic.endDate" #endInput="ngModel" required />
+                    <div [hidden]="endInput.valid || endInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <button (click)="addWorkOnTopic(topicInput, workInput, deptInput, startInput, endInput)" 
+                        [disabled]="topicInput.invalid || workInput.invalid || deptInput.invalid || startInput.invalid || endInput.invalid">
+                    Добавить запись
+                </button>
+            </div>
+            
+            <!-- Форма редактирования подразделения -->
+            <div class="form-container" *ngIf="selectedDepartment" style="margin-top: 30px;">
+                <h2>Изменение подразделения</h2>
+                
+                <div class="form-group">
+                    <label>Номер подразделения</label>
+                    <input type="number" name="selectedDepartmentNumber" [ngModel]="selectedDepartment.departmentNumber" disabled />
+                </div>
+                
+                <div class="form-group">
+                    <label>Наименование подразделения</label>
+                    <input name="selectedDepartmentName" [(ngModel)]="selectedDepartment.departmentName" #editNameInput="ngModel" required />
+                    <div [hidden]="editNameInput.valid || editNameInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Руководитель</label>
+                    <select [(ngModel)]="selectedDepartment.managerFullName" name="selectedManagerFullName" required>
+                        <option *ngFor="let manager of managers" [value]="manager.managerFullName">
+                            {{ manager.managerFullName }}
+                        </option>
+                    </select>
+                </div>
+                
+                <button (click)="updateDepartment()" [disabled]="editNameInput.invalid">
+                    Сохранить изменения
+                </button>
+            </div>
+            
+            <!-- Форма редактирования работы -->
+            <div class="form-container" *ngIf="selectedWork" style="margin-top: 30px;">
+                <h2>Изменение работы</h2>
+                
+                <div class="form-group">
+                    <label>Код работы</label>
+                    <input name="selectedWorkCode" [ngModel]="selectedWork.workCode" disabled />
+                </div>
+                
+                <div class="form-group">
+                    <label>Наименование работы</label>
+                    <input name="selectedWorkName" [(ngModel)]="selectedWork.workName" #editWorkNameInput="ngModel" required />
+                    <div [hidden]="editWorkNameInput.valid || editWorkNameInput.untouched" class="red-alert">
+                        Это поле обязательно для заполнения!
+                    </div>
+                </div>
+                
+                <button (click)="updateWork()" [disabled]="editWorkNameInput.invalid">
+                    Сохранить изменения
+                </button>
+            </div>
+        </aside>
+    </div>
+</div>
